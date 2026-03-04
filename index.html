@@ -218,8 +218,12 @@
           <div class="field"><label>email</label><input type="email" id="email" placeholder="you@email.com" /></div>
         </div>
         <div class="row">
-          <div class="field"><label>tiktok handle</label><input type="text" id="tiktok" placeholder="@handle" /></div>
-          <div class="field"><label>instagram handle</label><input type="text" id="ig" placeholder="@handle" /></div>
+          <div class="field"><label>tiktok handle <span style="color:var(--dim)">(optional)</span></label><input type="text" id="tiktok" placeholder="@handle" /></div>
+          <div class="field"><label>instagram handle <span style="color:var(--dim)">(optional)</span></label><input type="text" id="ig" placeholder="@handle" /></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>x / twitter handle <span style="color:var(--dim)">(optional)</span></label><input type="text" id="xhandle" placeholder="@handle" /></div>
+          <div class="field"></div>
         </div>
       </div>
     </div>
@@ -246,6 +250,33 @@
               <input type="text" id="link1" placeholder="paste tiktok, instagram, or youtube link..." oninput="handleLink(1)" />
             </div>
             <div id="preview1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- X Posts -->
+    <div class="section">
+      <span class="section-label">top x posts <span style="color:var(--dim);text-transform:none;letter-spacing:0">(optional)</span></span>
+      <div class="video-grid">
+        <div class="video-slot" id="xslot0">
+          <div class="slot-inner">
+            <div class="slot-num">post 01</div>
+            <div class="link-wrap">
+              <span class="link-icon" id="xicon0">𝕏</span>
+              <input type="text" id="xlink0" placeholder="x.com/username/status/..." oninput="handleXLink(0)" />
+            </div>
+            <div id="xpreview0"></div>
+          </div>
+        </div>
+        <div class="video-slot" id="xslot1">
+          <div class="slot-inner">
+            <div class="slot-num">post 02</div>
+            <div class="link-wrap">
+              <span class="link-icon" id="xicon1">𝕏</span>
+              <input type="text" id="xlink1" placeholder="x.com/username/status/..." oninput="handleXLink(1)" />
+            </div>
+            <div id="xpreview1"></div>
           </div>
         </div>
       </div>
@@ -319,6 +350,24 @@
       return { name: 'Link', icon: '🔗', embedUrl: null };
     }
 
+    function handleXLink(idx) {
+      const val = document.getElementById(`xlink${idx}`).value.trim();
+      const slot = document.getElementById(`xslot${idx}`);
+      const preview = document.getElementById(`xpreview${idx}`);
+      if (!val) { slot.classList.remove('has-link'); preview.innerHTML = ''; return; }
+      slot.classList.add('has-link');
+      // X posts can't be embedded directly, show link card
+      const shortUrl = val.replace('https://','').replace('http://','');
+      preview.innerHTML = `
+        <div class="link-card">
+          <span class="link-card-icon">𝕏</span>
+          <div class="link-card-body">
+            <div class="link-card-platform">X Post</div>
+            <div class="link-card-url">${shortUrl}</div>
+          </div>
+        </div>`;
+    }
+
     function handleLink(idx) {
       const val = document.getElementById(`link${idx}`).value.trim();
       const slot = document.getElementById(`slot${idx}`);
@@ -367,8 +416,11 @@
         name, email,
         tiktokHandle: document.getElementById('tiktok').value.trim(),
         igHandle: document.getElementById('ig').value.trim(),
+        xHandle: document.getElementById('xhandle').value.trim(),
         video1: video1 || null,
         video2: video2 || null,
+        xPost1: document.getElementById('xlink0').value.trim() || null,
+        xPost2: document.getElementById('xlink1').value.trim() || null,
         achievements: document.getElementById('achievements').value.trim(),
         why: document.getElementById('why').value.trim(),
         submittedAt: new Date().toISOString(),
@@ -396,7 +448,7 @@
               <div class="sub-vid-label">video ${i+1}</div>
               <a class="sub-vid-url" href="${url}" target="_blank">${url}</a>
             </div>`).join('');
-          const handles = [app.tiktokHandle && `TikTok: ${app.tiktokHandle}`, app.igHandle && `IG: ${app.igHandle}`].filter(Boolean).join(' · ');
+          const handles = [app.tiktokHandle && `TikTok: ${app.tiktokHandle}`, app.igHandle && `IG: ${app.igHandle}`, app.xHandle && `X: ${app.xHandle}`].filter(Boolean).join(' · ');
           return `
             <div class="sub-card">
               <div class="sub-head">
@@ -408,6 +460,13 @@
                 <div class="sub-time">${new Date(app.submittedAt).toLocaleString()}</div>
               </div>
               ${videos ? `<div class="sub-videos">${videos}</div>` : ''}
+              ${[app.xPost1, app.xPost2].filter(Boolean).length ? `
+                <div class="sub-videos">${[app.xPost1, app.xPost2].filter(Boolean).map((url, i) => `
+                  <div class="sub-video">
+                    <div class="sub-vid-label">𝕏 post ${i+1}</div>
+                    <a class="sub-vid-url" href="${url}" target="_blank">${url}</a>
+                  </div>`).join('')}
+                </div>` : ''}
               ${app.achievements ? `<div class="sub-section-label">achievements</div><div class="sub-text">${app.achievements}</div>` : ''}
               ${app.why ? `<div class="sub-section-label">why constella</div><div class="sub-text">${app.why}</div>` : ''}
             </div>`;

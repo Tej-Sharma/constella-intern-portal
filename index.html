@@ -403,7 +403,7 @@
       document.getElementById(countId).textContent = document.getElementById(fieldId).value.length;
     }
 
-    function submitForm() {
+    async function submitForm() {
       const name = document.getElementById('name').value.trim();
       const email = document.getElementById('email').value.trim();
       const video1 = document.getElementById('link0').value.trim();
@@ -412,7 +412,7 @@
       if (!name || !email) { alert('Please fill in your name and email.'); return; }
       if (!video1 && !video2) { alert('Please paste at least one video link.'); return; }
 
-      const sub = {
+      const payload = {
         name, email,
         tiktokHandle: document.getElementById('tiktok').value.trim(),
         igHandle: document.getElementById('ig').value.trim(),
@@ -423,15 +423,26 @@
         xPost2: document.getElementById('xlink1').value.trim() || null,
         achievements: document.getElementById('achievements').value.trim(),
         why: document.getElementById('why').value.trim(),
-        submittedAt: new Date().toISOString(),
       };
 
-      const existing = JSON.parse(localStorage.getItem('constella_intern_apps') || '[]');
-      existing.push(sub);
-      localStorage.setItem('constella_intern_apps', JSON.stringify(existing));
+      const btn = document.querySelector('.submit-btn');
+      btn.textContent = 'submitting...';
+      btn.disabled = true;
 
-      document.getElementById('formContainer').style.display = 'none';
-      document.getElementById('successScreen').style.display = 'block';
+      try {
+        const res = await fetch('https://constella.app/api/intern-apply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error('Failed');
+        document.getElementById('formContainer').style.display = 'none';
+        document.getElementById('successScreen').style.display = 'block';
+      } catch(e) {
+        alert('Something went wrong. Please try again.');
+        btn.textContent = 'submit application';
+        btn.disabled = false;
+      }
     }
 
     function openAdmin() {
